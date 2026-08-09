@@ -1,0 +1,113 @@
+.sidebar {
+  width: 270px;
+  min-width: 270px;
+  background: var(--color-dark-bg);
+  color: var(--color-dark-text);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 1.5rem;
+  padding: 0 0.25rem;
+}
+.sidebar-brand-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+}
+
+.sidebar-new-chat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: white;
+  border: none;
+  padding: 0.7rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 1.25rem;
+  transition: opacity var(--transition-fast);
+}
+.sidebar-new-chat:hover { opacity: 0.9; }
+
+.sidebar-section-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-dark-text-muted);
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.sidebar-chat-list {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-chat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--color-dark-text-muted);
+  padding: 0.6rem 0.6rem;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  font-size: 0.85rem;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.sidebar-chat-item:hover {
+  background: var(--color-dark-surface);
+  color: var(--color-dark-text);
+}
+.sidebar-chat-item.active {
+  background: var(--color-dark-surface);
+  color: var(--color-dark-text);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.sidebar-chat-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-empty {
+  color: var(--color-dark-text-muted);
+  font-size: 0.82rem;
+  padding: 0 0.25rem;
+}
+
+/* ---- Responsive: off-canvas drawer on mobile ---- */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 45;
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+}
