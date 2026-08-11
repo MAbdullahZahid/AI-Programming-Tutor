@@ -25,6 +25,7 @@ Rules you must always follow:
 """
 
 _model = None
+_title_model = None
 
 
 def _get_model():
@@ -58,3 +59,27 @@ def get_tutor_response(user_message: str, history: list) -> str:
     chat = model.start_chat(history=gemini_history)
     response = chat.send_message(user_message)
     return response.text
+
+
+def generate_chat_title(first_message: str) -> str:
+    """Generate a short sidebar title from the first message."""
+    fallback = first_message[:42].strip() + ("..." if len(first_message) > 42 else "")
+    if not GEMINI_API_KEY:
+        return fallback or "New Chat"
+
+    global _title_model
+    try:
+        if _title_model is None:
+            _title_model = genai.GenerativeModel(
+                model_name="gemini-3.5-flash",
+                system_instruction=(
+                    "Create a concise title for a programming-help chat. "
+                    "Return only the title, with no quotes. Use 2 to 6 words "
+                    "and no more than 45 characters."
+                ),
+            )
+        response = _title_model.generate_content(first_message)
+        title = " ".join((response.text or "").strip().strip('"\'').split())
+        return title[:45].rstrip(" .,:;-") or fallback or "New Chat"
+    except Exception:
+        return fallback or "New Chat"

@@ -66,7 +66,7 @@ export default function Chat() {
     if (!chatId) {
       // First message of a brand-new chat — create the chat now,
       // titled straight from what the student typed.
-      const res = await api.post("/chat", { title: userText.slice(0, 45) });
+      const res = await api.post("/chat", { title: "New Chat" });
       chatId = res.data.id;
       setChats((prev) => [res.data, ...prev]);
       setActiveChatId(chatId);

@@ -141,3 +141,5 @@
     white-space: nowrap;
   }
 }
+.admin-export-actions { display:flex; gap:.75rem; justify-content:flex-end; flex-wrap:wrap; margin-bottom:1.25rem; }
+.admin-delete-data-btn { color:var(--color-error); margin-left:.35rem; }

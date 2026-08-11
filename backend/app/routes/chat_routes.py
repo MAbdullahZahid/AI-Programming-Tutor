@@ -3,7 +3,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.extensions import db
 from app.models.chat import Chat
 from app.models.message import Message
-from app.services.gemini_service import get_tutor_response
+from app.services.gemini_service import get_tutor_response, generate_chat_title
+from app.utils.decorators import consent_required
 
 chat_bp = Blueprint("chat", __name__)
 
@@ -18,7 +19,7 @@ def list_chats():
 
 
 @chat_bp.route("", methods=["POST"])
-@jwt_required()
+@consent_required
 def create_chat():
     user_id = get_jwt_identity()
     data = request.get_json() or {}
@@ -43,7 +44,7 @@ def get_messages(chat_id):
 
 
 @chat_bp.route("/<int:chat_id>/messages", methods=["POST"])
-@jwt_required()
+@consent_required
 def send_message(chat_id):
     user_id = get_jwt_identity()
     chat = Chat.query.filter_by(id=chat_id, user_id=user_id).first()
@@ -59,7 +60,7 @@ def send_message(chat_id):
     # whether it's brand-new or an old empty "New Chat" row left over from
     # before this behaviour existed — name it from the first message sent.
     if len(chat.messages) == 0:
-        chat.title = content[:45] + ("..." if len(content) > 45 else "")
+        chat.title = generate_chat_title(content)
 
     user_msg = Message(chat_id=chat.id, sender="user", content=content)
     db.session.add(user_msg)
