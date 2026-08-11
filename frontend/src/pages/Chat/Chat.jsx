@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, ClipboardList } from "lucide-react";
+import { Send, ClipboardList, Sparkles } from "lucide-react";
 import api from "../../api/axios.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import Sidebar from "../../components/Sidebar/Sidebar.jsx";
@@ -127,7 +127,8 @@ export default function Chat() {
         <div className="messages-area">
           {messages.length === 0 && (
             <div className="empty-state">
-              <p>👋 Ask your first programming question to get started.</p>
+              <div className="empty-state-icon"><Sparkles size={24} /></div>
+              <p>Ask your first programming question to get started.</p>
               <p className="empty-state-hint">The tutor gives hints first — not full answers — to help you actually learn.</p>
             </div>
           )}
@@ -139,21 +140,23 @@ export default function Chat() {
         </div>
 
         <form className="chat-input-bar" onSubmit={handleSend}>
-          <textarea
-            placeholder="Ask a programming question or paste your code..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            rows={1}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend(e);
-              }
-            }}
-          />
-          <button type="submit" className="btn btn-primary chat-send-btn" disabled={sending || !input.trim()}>
-            <Send size={16} />
-          </button>
+          <div className="chat-input-inner">
+            <textarea
+              placeholder="Ask a programming question or paste your code..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              rows={1}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend(e);
+                }
+              }}
+            />
+            <button type="submit" className="chat-send-btn" disabled={sending || !input.trim()}>
+              <Send size={16} />
+            </button>
+          </div>
         </form>
       </main>
     </div>

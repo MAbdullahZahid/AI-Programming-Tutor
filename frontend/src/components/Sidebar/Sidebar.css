@@ -1,18 +1,21 @@
 .sidebar {
-  width: 270px;
-  min-width: 270px;
-  background: var(--color-dark-bg);
+  width: 272px;
+  min-width: 272px;
+  background: var(--gradient-dark-mesh);
   color: var(--color-dark-text);
   padding: 1.25rem 1rem;
   display: flex;
   flex-direction: column;
   height: 100%;
+  border-right: 1px solid var(--color-dark-border);
+  position: relative;
 }
 
 .sidebar-brand {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.05rem;
   margin-bottom: 1.5rem;
@@ -22,7 +25,9 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  background: var(--color-accent);
+  box-shadow: 0 0 12px rgba(240, 168, 62, 0.7);
+  animation: spark-pulse 2.4s infinite;
 }
 
 .sidebar-new-chat {
@@ -30,25 +35,33 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  background: var(--gradient-primary);
+  background-size: 160% 160%;
   color: white;
   border: none;
-  padding: 0.7rem;
+  padding: 0.72rem;
   border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.88rem;
-  margin-bottom: 1.25rem;
-  transition: opacity var(--transition-fast);
+  margin-bottom: 1.35rem;
+  box-shadow: 0 4px 16px rgba(47, 111, 78, 0.35);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-position var(--transition-base);
 }
-.sidebar-new-chat:hover { opacity: 0.9; }
+.sidebar-new-chat:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(47, 111, 78, 0.45);
+  background-position: 100% 0;
+}
+.sidebar-new-chat:active { transform: scale(0.98); }
 
 .sidebar-section-label {
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--color-dark-text-muted);
   margin-bottom: 0.5rem;
   padding: 0 0.25rem;
+  font-weight: 600;
 }
 
 .sidebar-chat-list {
@@ -62,26 +75,29 @@
 .sidebar-chat-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
   width: 100%;
   background: transparent;
   border: none;
   color: var(--color-dark-text-muted);
-  padding: 0.6rem 0.6rem;
+  padding: 0.62rem 0.65rem;
   border-radius: var(--radius-sm);
   text-align: left;
   font-size: 0.85rem;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
+.sidebar-chat-item svg { flex-shrink: 0; opacity: 0.8; }
 .sidebar-chat-item:hover {
-  background: var(--color-dark-surface);
+  background: var(--color-dark-surface-alt);
   color: var(--color-dark-text);
+  transform: translateX(2px);
 }
 .sidebar-chat-item.active {
-  background: var(--color-dark-surface);
+  background: var(--color-dark-surface-alt);
   color: var(--color-dark-text);
-  box-shadow: inset 3px 0 0 var(--color-primary);
+  box-shadow: inset 3px 0 0 var(--color-accent);
 }
+.sidebar-chat-item.active svg { opacity: 1; color: var(--color-accent); }
 
 .sidebar-chat-title {
   overflow: hidden;
@@ -105,7 +121,7 @@
     z-index: 45;
     transform: translateX(-100%);
     transition: transform var(--transition-base);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-xl);
   }
   .sidebar.sidebar-open {
     transform: translateX(0);
