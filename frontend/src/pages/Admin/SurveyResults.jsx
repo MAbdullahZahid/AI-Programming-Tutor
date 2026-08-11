@@ -85,6 +85,7 @@ export default function SurveyResults() {
                   }));
                   return (
                     <div key={q.id} className="card question-result-card animate-fade-up" style={{ animationDelay: `${Math.min(idx * 0.06, 0.3)}s` }}>
+                      <span className="badge badge-primary">{q.survey_title}</span>
                       <div className="question-result-header">
                         <p className="question-result-text">{q.question_text}</p>
                         <div className="question-result-avg">
@@ -120,6 +121,7 @@ export default function SurveyResults() {
               <div className="results-grid results-grid-single">
                 {textQuestions.map((q) => (
                   <div key={q.id} className="card question-result-card">
+                    <span className="badge badge-primary">{q.survey_title}</span>
                     <div className="question-result-header">
                       <p className="question-result-text">{q.question_text}</p>
                     </div>

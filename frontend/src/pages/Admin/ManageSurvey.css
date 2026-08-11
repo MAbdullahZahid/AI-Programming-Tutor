@@ -6,6 +6,25 @@
   flex-direction: column;
   gap: 1.5rem;
 }
+.manage-survey-content.wide { max-width: 920px; }
+.new-survey-btn { align-self: flex-start; }
+.survey-builder, .survey-admin-card { padding: 1.5rem; }
+.survey-builder { display: flex; flex-direction: column; gap: .65rem; }
+.survey-builder > input, .survey-builder > textarea, .builder-question input, .builder-question select, .inline-edit input, .inline-edit textarea { padding: .65rem .8rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-surface-alt); }
+.builder-heading, .survey-admin-header, .row-actions { display: flex; align-items: center; justify-content: space-between; gap: .65rem; }
+.builder-heading h3, .survey-admin-header h3 { margin: 0; }
+.survey-admin-header p { margin: .35rem 0 0; color: var(--color-text-muted); }
+.builder-question { display: grid; grid-template-columns: 1fr 130px 100px 36px; align-items: center; gap: .6rem; }
+.compact-check { display: flex; align-items: center; gap: 5px; font-size: .8rem; }
+.icon-btn { border: 0; background: transparent; padding: 7px; color: var(--color-text-muted); border-radius: 6px; }
+.icon-btn:hover { background: var(--color-surface-alt); }
+.icon-btn.danger:hover { color: var(--color-error); background: #fdeceb; }
+.row-actions { justify-content: flex-end; flex-shrink: 0; }
+.row-actions .badge { border: 0; cursor: pointer; }
+.add-existing { margin-top: .75rem; }
+.inline-edit { flex: 1; display: grid; gap: .5rem; }
+.form-error { color: var(--color-error); margin: 0; }
+@media (max-width: 700px) { .builder-question { grid-template-columns: 1fr; } .survey-admin-header { align-items: flex-start; } }
 
 .settings-card {
   padding: 1.5rem;

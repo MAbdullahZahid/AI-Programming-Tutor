@@ -84,6 +84,8 @@ def survey_analytics():
 
             question_results.append({
                 "id": q.id,
+                "survey_id": q.survey_id,
+                "survey_title": q.survey.title,
                 "question_text": q.question_text,
                 "question_type": "likert",
                 "counts": counts,
@@ -93,6 +95,8 @@ def survey_analytics():
         else:
             question_results.append({
                 "id": q.id,
+                "survey_id": q.survey_id,
+                "survey_title": q.survey.title,
                 "question_text": q.question_text,
                 "question_type": "text",
                 "responses": [r.answer_value for r in responses],

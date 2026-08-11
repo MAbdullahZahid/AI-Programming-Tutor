@@ -27,10 +27,20 @@ CREATE TABLE IF NOT EXISTS messages (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS surveys (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS survey_questions (
     id SERIAL PRIMARY KEY,
+    survey_id INTEGER NOT NULL REFERENCES surveys(id) ON DELETE CASCADE,
     question_text TEXT NOT NULL,
     question_type VARCHAR(20) NOT NULL,  -- likert | text
+    is_required BOOLEAN NOT NULL DEFAULT TRUE,
     order_index INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -51,3 +61,4 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_single_admin
 CREATE INDEX IF NOT EXISTS idx_chats_user_id ON chats(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
 CREATE INDEX IF NOT EXISTS idx_survey_responses_user_id ON survey_responses(user_id);
+CREATE INDEX IF NOT EXISTS idx_survey_questions_survey_id ON survey_questions(survey_id);

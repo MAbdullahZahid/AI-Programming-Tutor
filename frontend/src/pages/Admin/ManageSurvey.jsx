@@ -1,205 +1,85 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Pencil, Check } from "lucide-react";
+import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
 import api from "../../api/axios.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import Navbar from "../../components/Navbar/Navbar.jsx";
 import AdminSidebar from "../../components/AdminSidebar/AdminSidebar.jsx";
 import "./ManageSurvey.css";
 
+const blankQuestion = () => ({ question_text: "", question_type: "likert", is_required: true });
+
 export default function ManageSurvey() {
   const { logout } = useAuth();
-
-  const [questions, setQuestions] = useState([]);
-  const [questionText, setQuestionText] = useState("");
-  const [questionType, setQuestionType] = useState("likert");
-  const [isRequired, setIsRequired] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [surveys, setSurveys] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [draft, setDraft] = useState({ title: "", description: "", questions: [blankQuestion()] });
+  const [editing, setEditing] = useState(null);
+  const [error, setError] = useState("");
+  const load = () => api.get("/survey").then((r) => setSurveys(r.data));
+  useEffect(() => { load(); }, []);
 
-  const [settings, setSettings] = useState({ title: "", description: "" });
-  const [editingSettings, setEditingSettings] = useState(false);
-  const [settingsDraft, setSettingsDraft] = useState({ title: "", description: "" });
-  const [savingSettings, setSavingSettings] = useState(false);
-
-  const loadQuestions = async () => {
-    const res = await api.get("/survey/questions");
-    setQuestions(res.data);
-  };
-
-  const loadSettings = async () => {
-    const res = await api.get("/survey/settings");
-    setSettings(res.data);
-    setSettingsDraft(res.data);
-  };
-
-  useEffect(() => {
-    loadQuestions();
-    loadSettings();
-  }, []);
-
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    if (!questionText.trim()) return;
-    setSaving(true);
+  const setQuestion = (index, field, value) => setDraft((d) => ({ ...d,
+    questions: d.questions.map((q, i) => i === index ? { ...q, [field]: value } : q) }));
+  const submit = async (e) => {
+    e.preventDefault(); setError("");
     try {
-      await api.post("/survey/questions", {
-        question_text: questionText,
-        question_type: questionType,
-        is_required: isRequired,
-        order_index: questions.length + 1,
-      });
-      setQuestionText("");
-      setIsRequired(true);
-      await loadQuestions();
-    } finally {
-      setSaving(false);
-    }
+      await api.post("/survey", { ...draft, questions: draft.questions.filter((q) => q.question_text.trim()) });
+      setDraft({ title: "", description: "", questions: [blankQuestion()] }); setCreating(false); await load();
+    } catch (err) { setError(err.response?.data?.error || "Could not create survey"); }
   };
-
-  const handleDelete = async (id) => {
-    await api.delete(`/survey/questions/${id}`);
-    await loadQuestions();
+  const removeSurvey = async (id) => {
+    if (!window.confirm("Delete this survey and all of its responses?")) return;
+    await api.delete(`/survey/${id}`); await load();
   };
-
-  const handleSaveSettings = async () => {
-    setSavingSettings(true);
-    try {
-      const res = await api.put("/survey/settings", settingsDraft);
-      setSettings(res.data);
-      setEditingSettings(false);
-    } finally {
-      setSavingSettings(false);
-    }
+  const saveSurvey = async (survey) => { await api.put(`/survey/${survey.id}`, editing); setEditing(null); await load(); };
+  const addQuestion = async (surveyId) => {
+    const text = window.prompt("Enter the new question");
+    if (!text?.trim()) return;
+    await api.post(`/survey/${surveyId}/questions`, { question_text: text, question_type: "likert", is_required: true }); await load();
   };
+  const toggleRequired = async (q) => { await api.put(`/survey/questions/${q.id}`, { is_required: !q.is_required }); await load(); };
+  const editQuestion = async (q) => {
+    const text = window.prompt("Edit question", q.question_text);
+    if (!text?.trim()) return;
+    const type = window.prompt("Question type: likert or text", q.question_type);
+    if (!type || !["likert", "text"].includes(type.toLowerCase())) return;
+    await api.put(`/survey/questions/${q.id}`, { question_text: text, question_type: type.toLowerCase() }); await load();
+  };
+  const removeQuestion = async (id) => { await api.delete(`/survey/questions/${id}`); await load(); };
 
-  return (
-    <div className="admin-page">
-      {sidebarOpen && <div className="admin-sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
-      <AdminSidebar isOpen={sidebarOpen} onLogout={logout} />
-
-      <div className="admin-main">
-        <Navbar
-          title="Manage Post-Use Survey"
-          subtitle="Set the survey name and manage its questions"
-          onMenuClick={() => setSidebarOpen(true)}
-        />
-
-        <div className="manage-survey-content">
-          <div className="card settings-card animate-fade-up">
-            <div className="settings-card-header">
-              <h3>Survey Name</h3>
-              {!editingSettings && (
-                <button className="btn btn-ghost settings-edit-btn" onClick={() => { setSettingsDraft(settings); setEditingSettings(true); }}>
-                  <Pencil size={13} /> Edit
-                </button>
-              )}
-            </div>
-
-            {editingSettings ? (
-              <div className="settings-form">
-                <label>Survey title</label>
-                <input
-                  type="text"
-                  value={settingsDraft.title}
-                  onChange={(e) => setSettingsDraft((s) => ({ ...s, title: e.target.value }))}
-                  placeholder="e.g. Post-Use Survey"
-                  maxLength={200}
-                />
-                <label>Intro text shown to students</label>
-                <textarea
-                  rows={2}
-                  value={settingsDraft.description}
-                  onChange={(e) => setSettingsDraft((s) => ({ ...s, description: e.target.value }))}
-                  placeholder="e.g. Your honest feedback helps improve the tutor for future students."
-                />
-                <div className="settings-form-actions">
-                  <button className="btn btn-ghost" onClick={() => setEditingSettings(false)}>Cancel</button>
-                  <button className="btn btn-primary" onClick={handleSaveSettings} disabled={savingSettings}>
-                    <Check size={14} /> {savingSettings ? "Saving..." : "Save"}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="settings-preview">
-                <p className="settings-preview-title">{settings.title || "Post-Use Survey"}</p>
-                <p className="settings-preview-desc">{settings.description}</p>
-              </div>
-            )}
+  return <div className="admin-page">
+    {sidebarOpen && <div className="admin-sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+    <AdminSidebar isOpen={sidebarOpen} onLogout={logout} />
+    <div className="admin-main">
+      <Navbar title="Manage Surveys" subtitle="Create and manage multiple surveys" onMenuClick={() => setSidebarOpen(true)} />
+      <div className="manage-survey-content wide">
+        <button className="btn btn-primary new-survey-btn" onClick={() => setCreating(!creating)}><Plus size={16}/> Add Survey</button>
+        {creating && <form className="card survey-builder" onSubmit={submit}>
+          <div className="builder-heading"><h3>New Survey</h3><button type="button" className="icon-btn" onClick={() => setCreating(false)}><X size={18}/></button></div>
+          <label>Survey name</label><input required maxLength={200} value={draft.title} onChange={(e) => setDraft({...draft, title:e.target.value})}/>
+          <label>Description</label><textarea rows={2} value={draft.description} onChange={(e) => setDraft({...draft, description:e.target.value})}/>
+          <h4>Questions</h4>
+          {draft.questions.map((q, i) => <div className="builder-question" key={i}>
+            <input required value={q.question_text} placeholder={`Question ${i+1}`} onChange={(e) => setQuestion(i,"question_text",e.target.value)}/>
+            <select value={q.question_type} onChange={(e) => setQuestion(i,"question_type",e.target.value)}><option value="likert">Likert 1–5</option><option value="text">Open text</option></select>
+            <label className="compact-check"><input type="checkbox" checked={q.is_required} onChange={(e) => setQuestion(i,"is_required",e.target.checked)}/> Required</label>
+            {draft.questions.length > 1 && <button type="button" className="icon-btn danger" onClick={() => setDraft({...draft,questions:draft.questions.filter((_,x)=>x!==i)})}><Trash2 size={16}/></button>}
+          </div>)}
+          <button type="button" className="btn btn-ghost" onClick={() => setDraft({...draft, questions:[...draft.questions,blankQuestion()]})}><Plus size={14}/> Add question</button>
+          {error && <p className="form-error">{error}</p>}
+          <button className="btn btn-primary"><Check size={15}/> Publish Survey</button>
+        </form>}
+        {surveys.length === 0 && <div className="card survey-admin-card"><p className="admin-empty">No surveys yet. Click Add Survey to create one.</p></div>}
+        {surveys.map((survey) => <div className="card survey-admin-card" key={survey.id}>
+          <div className="survey-admin-header">
+            {editing?.id === survey.id ? <div className="inline-edit"><input value={editing.title} onChange={(e)=>setEditing({...editing,title:e.target.value})}/><textarea value={editing.description} onChange={(e)=>setEditing({...editing,description:e.target.value})}/><button className="btn btn-primary" onClick={()=>saveSurvey(survey)}>Save</button></div> : <div><h3>{survey.title}</h3><p>{survey.description}</p></div>}
+            <div className="row-actions"><button className="icon-btn" title="Edit survey" onClick={()=>setEditing({id:survey.id,title:survey.title,description:survey.description})}><Pencil size={16}/></button><button className="icon-btn danger" title="Delete survey" onClick={()=>removeSurvey(survey.id)}><Trash2 size={16}/></button></div>
           </div>
-
-          <form className="card add-question-card animate-fade-up delay-1" onSubmit={handleAdd}>
-            <h3>Add a new question</h3>
-            <textarea
-              placeholder="e.g. I found the tutor useful for solving my programming problem."
-              value={questionText}
-              onChange={(e) => setQuestionText(e.target.value)}
-              rows={2}
-              required
-            />
-
-            <div className="question-type-select">
-              <label className={`type-option ${questionType === "likert" ? "selected" : ""}`}>
-                <input
-                  type="radio"
-                  name="type"
-                  value="likert"
-                  checked={questionType === "likert"}
-                  onChange={() => setQuestionType("likert")}
-                />
-                Likert scale (1–5)
-              </label>
-              <label className={`type-option ${questionType === "text" ? "selected" : ""}`}>
-                <input
-                  type="radio"
-                  name="type"
-                  value="text"
-                  checked={questionType === "text"}
-                  onChange={() => setQuestionType("text")}
-                />
-                Open text
-              </label>
-            </div>
-
-            <label className="required-toggle">
-              <input
-                type="checkbox"
-                checked={isRequired}
-                onChange={(e) => setIsRequired(e.target.checked)}
-              />
-              Required <span className="required-toggle-hint">(students must answer this — marked with *)</span>
-            </label>
-
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              <Plus size={15} />
-              {saving ? "Adding..." : "Add Question"}
-            </button>
-          </form>
-
-          <div className="card question-list-card animate-fade-up delay-2">
-            <h3>Current Questions ({questions.length})</h3>
-            {questions.length === 0 && <p className="admin-empty">No questions added yet — students will see an empty survey.</p>}
-            <div className="question-list">
-              {questions.map((q, idx) => (
-                <div key={q.id} className="question-row">
-                  <div>
-                    <span className="question-index">{idx + 1}.</span> {q.question_text}
-                    {q.is_required && <span className="required-star" title="Required">*</span>}
-                    <span className={`badge ${q.question_type === "likert" ? "badge-primary" : "badge-accent"} question-type-badge`}>
-                      {q.question_type === "likert" ? "Likert 1–5" : "Open text"}
-                    </span>
-                    <span className={`badge ${q.is_required ? "badge-success" : "badge-neutral"} question-type-badge`}>
-                      {q.is_required ? "Required" : "Optional"}
-                    </span>
-                  </div>
-                  <button className="question-delete-btn" onClick={() => handleDelete(q.id)}>
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+          <div className="question-list">{survey.questions.map((q,i)=><div className="question-row" key={q.id}><span>{i+1}. {q.question_text} <span className="badge badge-neutral">{q.question_type === "likert" ? "Likert 1–5" : "Text"}</span></span><div className="row-actions"><button className={`badge ${q.is_required ? "badge-success":"badge-neutral"}`} onClick={()=>toggleRequired(q)}>{q.is_required ? "Required":"Optional"}</button><button className="icon-btn" title="Edit question" onClick={()=>editQuestion(q)}><Pencil size={15}/></button><button className="icon-btn danger" onClick={()=>removeQuestion(q.id)}><Trash2 size={15}/></button></div></div>)}</div>
+          <button className="btn btn-ghost add-existing" onClick={()=>addQuestion(survey.id)}><Plus size={14}/> Add question</button>
+        </div>)}
       </div>
     </div>
-  );
+  </div>;
 }

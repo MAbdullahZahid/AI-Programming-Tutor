@@ -19,6 +19,8 @@
   padding: 2rem 2.25rem;
   height: fit-content;
 }
+.survey-list-wrap { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 1.5rem; }
+.survey-list-wrap > .survey-back { align-self: flex-start; margin-bottom: -0.25rem; }
 
 .survey-back {
   display: inline-flex;
