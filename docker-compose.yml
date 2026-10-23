@@ -1,0 +1,73 @@
+# ── AI Programming Tutor ── Docker Compose ──────────────────────────────
+# Three services: db (PostgreSQL) | backend (Flask) | frontend (React/nginx)
+# Named volume "ai-tutor-pgdata" demonstrates Docker data persistence (Task 4)
+
+services:
+
+  # ── PostgreSQL Database ──────────────────────────────────────────────
+  db:
+    image: postgres:15
+    container_name: ai-tutor-db
+    restart: always
+    environment:
+      POSTGRES_USER: tutor_user
+      POSTGRES_PASSWORD: tutor_pass
+      POSTGRES_DB: tutor_db
+    volumes:
+      # Named volume — data persists even if container is removed (Task 4)
+      - ai-tutor-pgdata:/var/lib/postgresql/data
+      # Auto-run schema on first startup
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutor_user -d tutor_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Flask Backend ────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ai-tutor-backend
+    restart: always
+    environment:
+      FLASK_APP: run.py
+      FLASK_ENV: development
+      SECRET_KEY: 8fK2mQ9xL4vT7pZ1nR6sW3cY5hJ8dF0a
+      JWT_SECRET_KEY: V7qN2xL9kR4mP8sT1wZ6cH3jF5yB0dG2
+      # db = service name above, Docker Compose DNS resolves it automatically
+      DATABASE_URL: postgresql://tutor_user:tutor_pass@db:5432/tutor_db
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-your-gemini-api-key-here}
+      FRONTEND_ORIGIN: http://localhost
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Bind mount for live code changes during development
+      - ./backend:/app
+
+  # ── React Frontend (nginx) ───────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Nginx proxies /api/ to backend — same host, no CORS issues
+        VITE_API_BASE_URL: /api
+    container_name: ai-tutor-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+# ── Named Volumes ────────────────────────────────────────────────────────
+volumes:
+  ai-tutor-pgdata:
+    driver: local
+
