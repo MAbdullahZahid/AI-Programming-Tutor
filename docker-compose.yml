@@ -39,8 +39,8 @@ services:
       SECRET_KEY: 8fK2mQ9xL4vT7pZ1nR6sW3cY5hJ8dF0a
       JWT_SECRET_KEY: V7qN2xL9kR4mP8sT1wZ6cH3jF5yB0dG2
       # db = service name above, Docker Compose DNS resolves it automatically
-      DATABASE_URL: postgresql://tutor_user:tutor_pass@db:5432/tutor_db
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-your-gemini-api-key-here}
+      DATABASE_URL: postgresql+psycopg2://tutor_user:tutor_pass@db:5432/tutor_db
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
       FRONTEND_ORIGIN: http://localhost
     ports:
       - "5000:5000"

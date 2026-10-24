@@ -12,6 +12,8 @@ node_modules/
 frontend/.env
 frontend/dist/
 
+# Root secrets — never commit
+.env
 
 # Misc
 .DS_Store
